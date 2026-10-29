@@ -1,25 +1,74 @@
 # Steward
 
-Steward is a finance console for agent spend. An agent asks to pay a vendor. The app checks that ask against the mandate for that agent and writes the verdict. It does not send the payment, and it does not hold the funds. Whoever integrates with it pays, and only after an allow.
+Steward is a finance console for agent spend. It evaluates payment requests against explicit mandates and records the resulting verdict without holding funds or executing payments.
 
-Three screens.
+[Open the live app](https://steward-ochre.vercel.app/)
 
-Console is the daily view. Spend so far, the queue of requests waiting on a person, and the decision log. You can submit a request from the same page. An allow lasts five minutes. Approving a review appends a new allow and leaves the original review where it was. Denying one writes the resolution only.
+## Features
 
-Policies is the mandate. It is shown as a sentence, so you can read the cap, the categories, the review line, and who granted it. Compare puts the current mandate next to the one it replaced. Publishing revokes the active mandate for that agent and adds a new one. The old mandate stays in the history. Past decisions keep its id.
+- **Finance console** — shows current spend, pending reviews, mandate usage, and an append-only decision log.
+- **Spend evaluation** — returns allow, review, or a specific denial with the mandate and reason behind it.
+- **Approval queue** — lets an authorized role resolve requests that require review while preserving the original decision.
+- **Mandate editor** — creates readable spending rules with per-payment and rolling 30-day limits, category restrictions, review thresholds, and expiry dates.
+- **Version history** — replaces mandates instead of editing them in place, with side-by-side comparisons between versions.
+- **USDC trace** — reads Base and Solana transactions from public RPC endpoints and links to the appropriate block explorer.
+- **Escrow records** — models created, funded, delivered, released, and refunded states after an allowed request.
 
-Trace reads USDC on Base and Solana from the chain. You can paste a transaction or load a recent Base transfer. Escrow deals on that page are a record kept in the browser: created, funded, delivered, then released, or refunded. They are not a contract. A review or a denial does not open one, and approving that review later still does not.
+## How decisions are made
 
-A request is checked in one order. More than ten decisions from the same agent in a minute is denied before a mandate is considered. Then the category, the per-payment cap, and the rolling 30 days of allows on that mandate. Above the review line, a person has to approve. An amount sitting on the line is allowed. If several mandates could apply, the earliest allow wins. If none allow, the earliest review wins. Otherwise the oldest result stands.
+A request is evaluated in this order:
 
-Observe and enforce are only stamps on the decision. The app does not block a payment in either mode. The enforce note on screen is the reminder to pay only on an allow.
+1. Velocity limit
+2. Active mandate and expiry
+3. Allowed spending category
+4. Per-payment limit
+5. Rolling 30-day limit
+6. Human-review threshold
 
-The sample ledger is saved in the browser. Reset sample loads a fresh one.
+More than ten decisions from one agent within 60 seconds is denied before mandate matching. An amount equal to the review threshold is allowed; only an amount above it requires review. An allow is payable for five minutes.
+
+When several mandates match, the first allow in creation order wins. If none allow, the first review wins. Otherwise, the oldest denial is returned.
+
+## Technical overview
+
+- React 19 and TypeScript
+- Vite
+- React Router
+- TanStack Query for asynchronous chain reads
+- viem for Base receipt and ERC-20 event decoding
+- Solana JSON-RPC for parsed transaction data
+- Vitest for policy engine and store tests
+- oxlint for static analysis
+
+The application has no backend. The ledger and sample escrow records are stored in `localStorage`. Base and Solana transaction data comes from public mainnet RPC endpoints.
+
+The evaluation engine is kept separate from the React components. It accepts a ledger, a request, and a timestamp, then returns a deterministic verdict. Store operations append decisions and resolutions rather than rewriting existing records.
+
+## Run locally
+
+Node.js 20.19 or newer is required.
 
 ```bash
 npm install
-npm test
 npm run dev
 ```
 
-React and TypeScript, on Vite. Chain reads go through TanStack Query. Base uses viem. Solana is a `getTransaction` call on the public RPC.
+The development server runs at `http://localhost:5173`.
+
+## Available scripts
+
+```bash
+npm run dev      # Start the development server
+npm run build    # Type-check and create a production build
+npm run preview  # Preview the production build
+npm run lint     # Run static analysis
+npm test         # Run the test suite
+```
+
+## Data and limitations
+
+- Sample data is saved in the browser and can be restored with **Reset sample**.
+- Observe and enforce are recorded on each decision; Steward does not intercept or submit payments.
+- Escrow entries are local workflow records, not deployed smart contracts.
+- Public RPC endpoints may rate-limit requests or be temporarily unavailable.
+- No wallet, private key, card data, or customer funds are stored by the app.
