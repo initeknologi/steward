@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Local-only tooling
+.agents/
+.taste-skill/
+skills-lock.json
+
 # Editor directories and files
 .cursor
 .vscode/*

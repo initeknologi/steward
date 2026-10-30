@@ -168,7 +168,7 @@ function TraceCard({ result }: { result: TraceResult }) {
 
   return (
     <article className="trace-card">
-      <p className="kicker">{result.status === "success" ? "Succeeded" : "Failed"} · {result.chain}</p>
+      <p className="sub">{result.status === "success" ? "Succeeded" : "Failed"} · {result.chain}</p>
       <p className="statement">{result.summary}</p>
       {result.lines.length > 0 ? (
         <ul className="plain-list">

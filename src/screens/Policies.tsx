@@ -50,7 +50,7 @@ function PolicyBody({ agentId }: { agentId: string }) {
     <div className="stack loose">
       {notice ? <Banner tone="allow">{notice}</Banner> : null}
       <section className="prose-card">
-        <p className="kicker">{active ? active.id : "No active mandate"}</p>
+        <p className="sub">{active ? active.id : "No active mandate"}</p>
         {active && agent ? (
           <p className="statement">{mandateSentence(active, agent.name)}</p>
         ) : (
