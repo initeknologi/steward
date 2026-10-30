@@ -102,8 +102,8 @@ export function Console() {
               const agent = agentById(ledger, item.request.agentId);
               return (
                 <article key={item.id} className="queue-card">
-                  <p className="kicker">{agent?.name ?? item.request.agentId}</p>
-                  <h3 className="num">{formatAmount(item.request.amount, item.request.currency)}</h3>
+                  <p className="queue-agent">{agent?.name ?? item.request.agentId}</p>
+                  <p className="queue-amount num">{formatAmount(item.request.amount, item.request.currency)}</p>
                   <p>{item.reason}</p>
                   <div className="row-actions">
                     <Button
